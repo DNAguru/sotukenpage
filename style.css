@@ -1,0 +1,138 @@
+/* テキストが選択されたときのスタイル */
+.vo::selection {
+    background-color: #ffeb3b; /* 選択時の背景色 */
+    color: #000; /* 選択時の文字色 */
+}
+
+
+  .book {
+    -webkit-writing-mode: vertical-rl;
+    -moz-writing-mode: vertical-rl;
+    -ms-writing-mode: tb-rl;
+    -ms-writing-mode: vertical-rl;
+    writing-mode: vertical-rl;
+    -webkit-column-count: 数値;
+    -moz-column-count: 数値;
+    -ms-column-count: 数値;
+    column-count: 数値;
+    -webkit-column-gap: 数値;
+    -moz-column-gap: 数値;
+    -ms-column-gap: 数値;
+    column-gap: 数値;
+    display: inline-block;
+    height: 数値;
+    text-align: left;
+  }
+
+/* 縦書き電子書籍のページ全体のデザイン */
+.book {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin: 10px auto;
+    overflow: auto; /* 必要に応じてスクロール */
+    font-family: "ヒラギノ明朝 ProN", "Hiragino Mincho ProN", "Yu Mincho", serif;
+    font-size: 16px; /* 文字サイズ */
+    line-height: 1.8; /* 行間の調整 */
+}
+
+/* ページ内の段落スタイル */
+.book p {
+    text-indent: 1em; /* 字下げ */
+    margin: 0 0 0.5em; /* 段落間の余白 */
+}
+
+/* ホバー時のエフェクト強化 */
+.vo:hover {
+    background-color: #fdea93;
+    cursor: pointer; /* ポインタを変更 */
+    transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+/* スクロールバーのデザイン (Chrome/Edge/Safari用) */
+.book::-webkit-scrollbar {
+    width: 8px; /* スクロールバーの幅 */
+}
+
+.book::-webkit-scrollbar-thumb {
+    background-color: #ccc; /* スクロールバーの色 */
+    border-radius: 4px; /* スクロールバーの角を丸く */
+}
+
+.book::-webkit-scrollbar-track {
+    background-color: #f4f4f4; /* スクロールバーの背景 */
+}
+
+/* メディアクエリを使用したレスポンシブ対応 */
+@media (max-width: 768px) {
+    .book {
+        font-size: 14px; /* 小さい画面では文字サイズを縮小 */
+        padding: 10px;
+    }
+    #hover-preview {
+        font-size: 16px; /* 文字サイズをさらに小さく */
+        padding: 8px 16px;
+    }
+}
+
+/* 全体のレイアウト
+body {
+    font-family: "ヒラギノ明朝 ProN", "Hiragino Mincho ProN", "Yu Mincho", serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.book {
+    writing-mode: vertical-rl;
+    text-orientation: upright;
+    font-size: 16px;
+    line-height: 2;
+    width: 300px;
+    border: 1px solid #ccc;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+} */
+
+/* ホバー時のスタイル */
+.vo {
+    display: inline-block;
+    transition: transform 0.3s ease, background-color 0.3s ease;
+    cursor: pointer;
+}
+
+
+/* ホバーした文章を表示するエリア */
+#hover-preview {
+    -webkit-writing-mode: vertical-rl;
+    -moz-writing-mode: vertical-rl;
+    -ms-writing-mode: tb-rl;
+    -ms-writing-mode: vertical-rl;
+    writing-mode: vertical-rl;
+
+    position: fixed;
+    background-color: #fff;
+    border:3px solid #53535386;
+    padding: 10px 20px;
+    border-radius: 5px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    font-size: 18px; /* 文字サイズを少し小さめに */
+    font-weight: bold;
+    display: none;
+    white-space: nowrap;
+    max-width: 80%; /* タブレット用に幅を柔軟に */
+    z-index: 1000; /* 他の要素より前面に表示 */
+}
+
+/* 再生中の要素にハイライトを追加 */
+.vo.playing {
+    background-color: #fdea93;
+    transition: background-color 0.3s ease;
+}
+
