@@ -14,34 +14,35 @@
     -webkit-column-count: 数値;
     -moz-column-count: 数値;
     -ms-column-count: 数値;
-    column-count: 数値;
+    column-count: 1;
     -webkit-column-gap: 数値;
     -moz-column-gap: 数値;
     -ms-column-gap: 数値;
-    column-gap: 数値;
+    column-gap: normal;
     display: inline-block;
-    height: 数値;
+    height: 50em;
     text-align: left;
+    overflow-wrap: normal;
+    padding: 20px;
+    font-family: "ヒラギノ明朝 ProN", "Hiragino Mincho ProN", "Yu Mincho", serif;
+
   }
 
-/* 縦書き電子書籍のページ全体のデザイン */
+/* 縦書き電子書籍のページ全体のデザイン
 .book {
     background-color: #fff;
     border: 1px solid #ddd;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     padding: 20px;
     margin: 10px auto;
-    overflow: auto; /* 必要に応じてスクロール */
-    font-family: "ヒラギノ明朝 ProN", "Hiragino Mincho ProN", "Yu Mincho", serif;
-    font-size: 16px; /* 文字サイズ */
-    line-height: 1.8; /* 行間の調整 */
-}
+    overflow: auto; 
+} */
 
-/* ページ内の段落スタイル */
+/* ページ内の段落スタイル
 .book p {
-    text-indent: 1em; /* 字下げ */
-    margin: 0 0 0.5em; /* 段落間の余白 */
-}
+    text-indent: 1em;
+    margin: 0 0 0.5em; 
+} */
 
 /* ホバー時のエフェクト強化 */
 .vo:hover {
@@ -101,11 +102,11 @@ body {
 } */
 
 /* ホバー時のスタイル */
-.vo {
+/* .vo {
     display: inline-block;
     transition: transform 0.3s ease, background-color 0.3s ease;
     cursor: pointer;
-}
+} */
 
 
 /* ホバーした文章を表示するエリア */
@@ -122,12 +123,12 @@ body {
     padding: 10px 20px;
     border-radius: 5px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    font-size: 18px; /* 文字サイズを少し小さめに */
+    font-size: 18px; 
     font-weight: bold;
     display: none;
     white-space: nowrap;
-    max-width: 80%; /* タブレット用に幅を柔軟に */
-    z-index: 1000; /* 他の要素より前面に表示 */
+    max-width: 80%; 
+    z-index: 1000; 
 }
 
 /* 再生中の要素にハイライトを追加 */
