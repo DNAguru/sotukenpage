@@ -36,19 +36,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // ポインタが要素に触れたとき
     book.addEventListener("pointerdown", (e) => {
-        e.preventDefault();
-        const target = document.elementFromPoint(e.clientX, e.clientY);
+        if (e.pointerType === "touch" && e.isPrimary && e.touches?.length <= 1) {
+            e.preventDefault();
+            const target = document.elementFromPoint(e.clientX, e.clientY);
 
-        if (target && target.classList.contains("vo")) {
-            lastPosition = { x: e.clientX, y: e.clientY };
-            lastTime = performance.now();
-            playAudio(target); // 初回再生
+            if (target && target.classList.contains("vo")) {
+                lastPosition = { x: e.clientX, y: e.clientY };
+                lastTime = performance.now();
+                playAudio(target); // 初回再生
+            }
         }
     });
 
     // ポインタが移動したとき
     book.addEventListener("pointermove", (e) => {
-        if (!lastPosition || !lastTime) return;
+        if (!lastPosition || !lastTime || e.touches?.length > 1) return; // 2本指以上の操作は無視
 
         const target = document.elementFromPoint(e.clientX, e.clientY);
 
@@ -106,5 +108,18 @@ document.addEventListener("DOMContentLoaded", () => {
         lastPosition = null;
         lastTime = null;
         currentTarget = null;
+    });
+
+    // 2本指でのスクロールを有効化
+    book.addEventListener("touchstart", (e) => {
+        if (e.touches.length > 1) {
+            lastPosition = null;
+            lastTime = null;
+            if (activeAudio) {
+                activeAudio.pause();
+                activeAudio.currentTime = 0;
+                activeAudio = null;
+            }
+        }
     });
 });
