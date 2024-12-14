@@ -11,6 +11,7 @@ body {
 }
 
 .container {
+    font-size: 20px;
     width: 100%;
     height: 100%;
     display: flex;
@@ -34,7 +35,7 @@ body {
     -ms-column-gap: 数値;
     column-gap: normal;
     display: inline-block;
-    height: 50em;
+    height: 90%;
     text-align: left;
     overflow: hidden; /* スクロールさせない */
     padding: 20px;
@@ -46,7 +47,12 @@ body {
     touch-action: pan-y; /* 垂直方向のスクロールを許可 */
     
 
-  }
+}
+
+.vo {
+    padding-left: 8px;
+    padding-right: 8px;;
+}
 
 body, .book, .vo {
     -webkit-user-select: none; /* Safari */
@@ -75,17 +81,6 @@ body, .book, .vo {
     background-color: #f4f4f4; /* スクロールバーの背景 */
 }
 
-/* メディアクエリを使用したレスポンシブ対応 */
-@media (max-width: 768px) {
-    .book {
-        font-size: 14px; /* 小さい画面では文字サイズを縮小 */
-        padding: 10px;
-    }
-    #hover-preview {
-        font-size: 16px; /* 文字サイズをさらに小さく */
-        padding: 8px 16px;
-    }
-}
 
 
 

@@ -7,10 +7,11 @@ document.addEventListener("DOMContentLoaded", () => {
     let activeAudio = null; // 現在再生中の音声
     let currentTarget = null; // 現在のターゲット要素
 
+    // 音声キャッシュの準備
     voElements.forEach((element) => {
         const audioId = element.id.replace("vo", "").padStart(3, "0");
         const audio = new Audio(`voice/${audioId}.wav`);
-        audioElements[element.id] = audio; // 音声キャッシュ
+        audioElements[element.id] = audio;
     });
 
     // 再生処理
@@ -19,11 +20,16 @@ document.addEventListener("DOMContentLoaded", () => {
             activeAudio.pause();
             activeAudio.currentTime = 0; // 現在の音声を停止
         }
+        if (currentTarget) {
+            currentTarget.classList.remove("playing"); // 現在のターゲットからハイライトを削除
+        }
         const audioId = target.id;
         const audio = audioElements[audioId];
         if (!audio) return;
 
         activeAudio = audio;
+        currentTarget = target; // 現在のターゲットを更新
+        target.classList.add("playing"); // 新しいターゲットにハイライト
         audio.currentTime = 0; // 音声を最初から再生
         audio.play();
     }
@@ -36,7 +42,6 @@ document.addEventListener("DOMContentLoaded", () => {
         if (target && target.classList.contains("vo")) {
             lastPosition = { x: e.clientX, y: e.clientY };
             lastTime = performance.now();
-            currentTarget = target;
             playAudio(target); // 初回再生
         }
     });
@@ -47,9 +52,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const target = document.elementFromPoint(e.clientX, e.clientY);
 
+        // ターゲットが変わった場合のみ処理を実行
         if (target && target.classList.contains("vo") && target !== currentTarget) {
-            currentTarget = target;
-            playAudio(target); // 新しい要素の音声を再生
+            playAudio(target);
         }
 
         const currentTime = performance.now();
@@ -78,8 +83,11 @@ document.addEventListener("DOMContentLoaded", () => {
         if (activeAudio) {
             activeAudio.pause();
             activeAudio.currentTime = 0; // 再生位置をリセット
-            activeAudio = null;
         }
+        if (currentTarget) {
+            currentTarget.classList.remove("playing"); // ハイライトを解除
+        }
+        activeAudio = null;
         lastPosition = null;
         lastTime = null;
         currentTarget = null;
@@ -90,8 +98,11 @@ document.addEventListener("DOMContentLoaded", () => {
         if (activeAudio) {
             activeAudio.pause();
             activeAudio.currentTime = 0; // 再生位置をリセット
-            activeAudio = null;
         }
+        if (currentTarget) {
+            currentTarget.classList.remove("playing"); // ハイライトを解除
+        }
+        activeAudio = null;
         lastPosition = null;
         lastTime = null;
         currentTarget = null;
