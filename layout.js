@@ -1,24 +1,18 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const spanElements = document.querySelectorAll('.vo');
-    const maxCharsPerLine = 50; // 1行に収めたい文字数
+document.addEventListener("DOMContentLoaded", () => {
+    const bookElement = document.querySelector(".book");
 
-    spanElements.forEach(span => {
-        const text = span.textContent;
-        const lines = [];
-        let currentLine = '';
+    // タッチイベントで「引き下げて更新」を防止
+    document.body.addEventListener("touchmove", (e) => {
+        e.preventDefault(); // 全体のスクロール動作を無効化
+    });
 
-        for (let char of text) {
-            currentLine += char;
-            if (currentLine.length >= maxCharsPerLine) {
-                lines.push(currentLine);
-                currentLine = '';
-            }
+    // なぞる動作の処理
+    bookElement.addEventListener("touchmove", (e) => {
+        const touch = e.touches[0];
+        const target = document.elementFromPoint(touch.clientX, touch.clientY);
+
+        if (target && target.classList.contains("vo")) {
+            target.style.backgroundColor = "#fdea93"; // なぞった要素にハイライト
         }
-        if (currentLine) {
-            lines.push(currentLine);
-        }
-
-        // 改行ごとに `<br>` を挿入して新しい内容を設定
-        span.innerHTML = lines.join('<br>');
     });
 });

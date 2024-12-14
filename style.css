@@ -4,8 +4,22 @@
     color: #000; /* 選択時の文字色 */
 }
 
+body {
+    overflow: hidden; /* スクロールバーを非表示 */
+    touch-action: none; /* 全体のタッチ操作を無効化 */
+    overscroll-behavior: contain; /* 引き下げて更新を無効化 */
+}
 
-  .book {
+.container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f4f4f4;
+}
+
+.book {
     -webkit-writing-mode: vertical-rl;
     -moz-writing-mode: vertical-rl;
     -ms-writing-mode: tb-rl;
@@ -22,9 +36,15 @@
     display: inline-block;
     height: 50em;
     text-align: left;
-    overflow-wrap: normal;
+    overflow: hidden; /* スクロールさせない */
     padding: 20px;
     font-family: "ヒラギノ明朝 ProN", "Hiragino Mincho ProN", "Yu Mincho", serif;
+
+    overscroll-behavior: none; /* 特定の要素で引き下げ更新を無効化 */
+
+    overflow: auto; /* 特定の要素内のスクロールを許可 */
+    touch-action: pan-y; /* 垂直方向のスクロールを許可 */
+    
 
   }
 
