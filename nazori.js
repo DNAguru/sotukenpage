@@ -1,13 +1,10 @@
 document.addEventListener("DOMContentLoaded", () => {
-    const voElements = document.querySelectorAll(".vo"); // ターゲット要素
-    const book = document.querySelector(".book");
+    const voElements = document.querySelectorAll(".vo");
     const audioElements = {}; // 音声キャッシュ用
-    let lastPosition = null; // 前回の座標
-    let lastTime = null; // 前回の時間
     let activeAudio = null; // 現在再生中の音声
     let currentTarget = null; // 現在のターゲット要素
-
-    // 再生速度の範囲を設定
+    let lastPosition = null; // 前回の座標
+    let lastTime = null; // 前回の時間
     const minSpeed = 0.8; // 最低再生速度
     const maxSpeed = 3.0; // 最大再生速度
 
@@ -60,22 +57,8 @@ document.addEventListener("DOMContentLoaded", () => {
         lastTime = currentTime;
     }
 
-    // ポインタが移動したときの処理（なぞり操作対応）
-    function handleHover(e) {
-        const target = document.elementFromPoint(e.clientX, e.clientY);
-
-        // ターゲットが変わった場合のみ処理を実行
-        if (target && target.classList.contains("vo") && target !== currentTarget) {
-            playAudio(target); // 新しい要素の音声を再生
-        }
-
-        // 現在の位置と時間を使って速度を調整
-        adjustPlaybackRate({ x: e.clientX, y: e.clientY }, performance.now());
-    }
-
     // ポインタが要素に触れたとき
-    book.addEventListener("pointerdown", (e) => {
-        e.preventDefault();
+    document.addEventListener("pointerdown", (e) => {
         const target = document.elementFromPoint(e.clientX, e.clientY);
 
         if (target && target.classList.contains("vo")) {
@@ -88,12 +71,19 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // ポインタが移動したとき
-    book.addEventListener("pointermove", (e) => {
-        handleHover(e); // ホバー処理を実行
+    document.addEventListener("pointermove", (e) => {
+        adjustPlaybackRate({ x: e.clientX, y: e.clientY }, performance.now());
+
+        const target = document.elementFromPoint(e.clientX, e.clientY);
+
+        // 次の要素に移動した場合
+        if (target && target.classList.contains("vo") && target !== currentTarget) {
+            playAudio(target);
+        }
     });
 
     // ポインタが離れたとき
-    book.addEventListener("pointerup", () => {
+    document.addEventListener("pointerup", () => {
         if (activeAudio) {
             activeAudio.pause();
             activeAudio.currentTime = 0; // 再生位置をリセット
@@ -102,13 +92,13 @@ document.addEventListener("DOMContentLoaded", () => {
             currentTarget.classList.remove("playing"); // ハイライトを解除
         }
         activeAudio = null;
+        currentTarget = null;
         lastPosition = null;
         lastTime = null;
-        currentTarget = null;
     });
 
     // ポインタがキャンセルされたとき
-    book.addEventListener("pointercancel", () => {
+    document.addEventListener("pointercancel", () => {
         if (activeAudio) {
             activeAudio.pause();
             activeAudio.currentTime = 0; // 再生位置をリセット
@@ -117,8 +107,8 @@ document.addEventListener("DOMContentLoaded", () => {
             currentTarget.classList.remove("playing"); // ハイライトを解除
         }
         activeAudio = null;
+        currentTarget = null;
         lastPosition = null;
         lastTime = null;
-        currentTarget = null;
     });
 });

@@ -11,8 +11,5 @@ document.addEventListener("DOMContentLoaded", () => {
         const touch = e.touches[0];
         const target = document.elementFromPoint(touch.clientX, touch.clientY);
 
-        if (target && target.classList.contains("vo")) {
-            target.style.backgroundColor = "#fdea93"; // なぞった要素にハイライト
-        }
     });
 });
