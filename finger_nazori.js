@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
         audioElements[element.id] = audio;
     });
 
-    // ポインタが要素に触れたときに再生を開始
+    // タッチ位置に対応する要素を再生
     function playAudio(target) {
         if (activeAudio) {
             activeAudio.pause();
@@ -57,10 +57,10 @@ document.addEventListener("DOMContentLoaded", () => {
         lastTime = currentTime; // 現在の時間を更新
     }
 
-    // `pointerdown` または `touchstart` イベントの開始
+    // `touchstart` イベント
     function startInteraction(event) {
         event.preventDefault();
-        const startEvent = event.touches ? event.touches[0] : event;
+        const startEvent = event.touches[0];
         const target = document.elementFromPoint(startEvent.clientX, startEvent.clientY);
 
         if (target && target.classList.contains("vo")) {
@@ -71,9 +71,10 @@ document.addEventListener("DOMContentLoaded", () => {
         lastTime = performance.now();
     }
 
-    // `pointermove` または `touchmove` の操作
+    // `touchmove` イベント
     function moveInteraction(event) {
-        const moveEvent = event.touches ? event.touches[0] : event;
+        event.preventDefault();
+        const moveEvent = event.touches[0];
 
         adjustPlaybackRate({ x: moveEvent.clientX, y: moveEvent.clientY }, performance.now());
 
@@ -85,7 +86,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // `pointerup` または `touchend` イベントの終了
+    // `touchend` イベント
     function endInteraction() {
         if (activeAudio) {
             activeAudio.pause();
@@ -100,11 +101,7 @@ document.addEventListener("DOMContentLoaded", () => {
         lastTime = null;
     }
 
-    // イベントリスナーを追加
-    document.addEventListener("pointerdown", startInteraction);
-    document.addEventListener("pointermove", moveInteraction);
-    document.addEventListener("pointerup", endInteraction);
-
+    // イベントリスナーを追加（touchのみ対応）
     document.addEventListener("touchstart", startInteraction, { passive: false });
     document.addEventListener("touchmove", moveInteraction, { passive: false });
     document.addEventListener("touchend", endInteraction);

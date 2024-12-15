@@ -104,7 +104,7 @@ body, .book, .vo {
 /* 再生ボタン */
 #play-button, #prev-page-button, #next-page-button {
     padding: 10px 20px;
-    font-size: 16px;
+    font-size: 13px;
     cursor: pointer;
     background: #007bff;
     color: white;
