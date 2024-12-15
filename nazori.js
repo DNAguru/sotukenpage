@@ -2,6 +2,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const voElements = document.querySelectorAll(".vo");
     const cursor = document.getElementById("cursor");
     const joystick = document.getElementById("joystick");
+    const knob = document.createElement("div");
+    knob.id = "joystick-knob";
+    joystick.appendChild(knob);
     const playButton = document.getElementById("play-button");
     const prevPageButton = document.getElementById("prev-page-button");
     const nextPageButton = document.getElementById("next-page-button");
@@ -13,10 +16,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let cursorPosition = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
     let isJoystickActive = false;
-    let joystickOffset = { x: 0, y: 0 };
+    let knobPosition = { x: 0, y: 0 }; // ノブの現在位置（相対値）
+    let knobAngle = 0; // ノブの角度
+    let knobDistance = 0; // ノブの距離
     let isPlaying = false;
 
-    // スクロール量（1回のボタン操作で移動する距離）
     const SCROLL_AMOUNT = 300;
 
     // 音声キャッシュの準備
@@ -57,34 +61,77 @@ document.addEventListener("DOMContentLoaded", () => {
         if (isPlaying) audio.play();
     }
 
-    // ジョイスティックの動作
+    // ノブの動作を監視してポインタを動かす
     function moveCursor() {
-        if (isJoystickActive) {
+        if (isJoystickActive && knobDistance > 0) {
+            // ノブの角度に基づいてカーソルを移動
+            const speed = Math.min(knobDistance / 10, 10); // スピードを制限
             cursorPosition.x = Math.min(
                 window.innerWidth,
-                Math.max(0, cursorPosition.x + joystickOffset.x / 10)
+                Math.max(0, cursorPosition.x + Math.cos(knobAngle) * speed)
             );
             cursorPosition.y = Math.min(
                 window.innerHeight,
-                Math.max(0, cursorPosition.y + joystickOffset.y / 10)
+                Math.max(0, cursorPosition.y + Math.sin(knobAngle) * speed)
             );
             updateCursor();
-            requestAnimationFrame(moveCursor);
         }
+
+        // 次のフレームで再度呼び出し
+        requestAnimationFrame(moveCursor);
     }
 
-    joystick.addEventListener("mousedown", (e) => {
+    // ノブの移動処理
+    function startJoystickControl(event) {
         isJoystickActive = true;
-        const rect = joystick.getBoundingClientRect();
-        joystickOffset.x = e.clientX - (rect.left + rect.width / 2);
-        joystickOffset.y = e.clientY - (rect.top + rect.height / 2);
-        moveCursor();
-    });
 
-    joystick.addEventListener("mouseup", () => {
-        isJoystickActive = false;
-        joystickOffset = { x: 0, y: 0 };
-    });
+        const joystickRect = joystick.getBoundingClientRect();
+        const centerX = joystickRect.left + joystickRect.width / 2;
+        const centerY = joystickRect.top + joystickRect.height / 2;
+
+        const moveJoystick = (moveEvent) => {
+            const clientX = moveEvent.touches ? moveEvent.touches[0].clientX : moveEvent.clientX;
+            const clientY = moveEvent.touches ? moveEvent.touches[0].clientY : moveEvent.clientY;
+
+            const dx = clientX - centerX;
+            const dy = clientY - centerY;
+            const distance = Math.min(
+                Math.sqrt(dx * dx + dy * dy),
+                joystickRect.width / 2 - knob.offsetWidth / 2
+            );
+            const angle = Math.atan2(dy, dx);
+
+            // ノブの位置を更新
+            knob.style.left = `${50 + (distance * Math.cos(angle)) / (joystickRect.width / 2) * 100}%`;
+            knob.style.top = `${50 + (distance * Math.sin(angle)) / (joystickRect.height / 2) * 100}%`;
+
+            // ノブの状態を保存
+            knobPosition = { x: dx, y: dy };
+            knobAngle = angle;
+            knobDistance = distance;
+        };
+
+        const stopJoystickControl = () => {
+            isJoystickActive = false;
+            knob.style.left = "50%";
+            knob.style.top = "50%";
+            knobPosition = { x: 0, y: 0 };
+            knobAngle = 0;
+            knobDistance = 0;
+            document.removeEventListener("mousemove", moveJoystick);
+            document.removeEventListener("mouseup", stopJoystickControl);
+            document.removeEventListener("touchmove", moveJoystick);
+            document.removeEventListener("touchend", stopJoystickControl);
+        };
+
+        document.addEventListener("mousemove", moveJoystick);
+        document.addEventListener("mouseup", stopJoystickControl);
+        document.addEventListener("touchmove", moveJoystick);
+        document.addEventListener("touchend", stopJoystickControl);
+    }
+
+    joystick.addEventListener("mousedown", startJoystickControl);
+    joystick.addEventListener("touchstart", startJoystickControl);
 
     // 再生ボタンの操作
     playButton.addEventListener("mousedown", () => {
@@ -101,7 +148,7 @@ document.addEventListener("DOMContentLoaded", () => {
     prevPageButton.addEventListener("click", () => {
         const book = document.querySelector(".book");
         book.scrollBy({
-            top: -SCROLL_AMOUNT,
+            left: SCROLL_AMOUNT,
             behavior: "smooth",
         });
     });
@@ -109,10 +156,11 @@ document.addEventListener("DOMContentLoaded", () => {
     nextPageButton.addEventListener("click", () => {
         const book = document.querySelector(".book");
         book.scrollBy({
-            top: SCROLL_AMOUNT,
+            left: -SCROLL_AMOUNT,
             behavior: "smooth",
         });
     });
 
-    updateCursor();
+    // カーソルの動作を開始
+    moveCursor();
 });
