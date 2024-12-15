@@ -1,15 +1,24 @@
+// スクロールボタンの操作
 document.addEventListener("DOMContentLoaded", () => {
-    const bookElement = document.querySelector(".book");
+    const prevPageButton = document.getElementById("prev-page-button");
+    const nextPageButton = document.getElementById("next-page-button");
 
-    // タッチイベントで「引き下げて更新」を防止
-    document.body.addEventListener("touchmove", (e) => {
-        e.preventDefault(); // 全体のスクロール動作を無効化
+    const SCROLL_AMOUNT = 300;
+
+prevPageButton.addEventListener('touchstart', () => {
+    const book = document.querySelector(".book");
+    book.scrollBy({
+        left: SCROLL_AMOUNT,
+        behavior: "smooth",
     });
+});
 
-    // なぞる動作の処理
-    bookElement.addEventListener("touchmove", (e) => {
-        const touch = e.touches[0];
-        const target = document.elementFromPoint(touch.clientX, touch.clientY);
-
+nextPageButton.addEventListener('touchstart', () => {
+    const book = document.querySelector(".book");
+    book.scrollBy({
+        left: -SCROLL_AMOUNT,
+        behavior: "smooth",
     });
+});
+
 });

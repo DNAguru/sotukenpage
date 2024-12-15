@@ -7,6 +7,7 @@
 body {
     overflow: hidden; /* スクロールバーを非表示 */
     overscroll-behavior: contain; /* 引き下げて更新を無効化 */
+    touch-action: none;
 }
 
 .container {
@@ -49,10 +50,7 @@ body {
 
 }
 
-.vo {
-    padding-left: 8px;
-    padding-right: 8px;;
-}
+
 
 body, .book, .vo {
     -webkit-user-select: none; /* Safari */
