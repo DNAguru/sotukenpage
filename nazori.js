@@ -1,12 +1,23 @@
 document.addEventListener("DOMContentLoaded", () => {
     const voElements = document.querySelectorAll(".vo");
-    const audioElements = {}; // 音声キャッシュ用
-    let activeAudio = null; // 現在再生中の音声
-    let currentTarget = null; // 現在のターゲット要素
-    let lastPosition = null; // 前回の座標
-    let lastTime = null; // 前回の時間
-    const minSpeed = 0.8; // 最低再生速度
-    const maxSpeed = 3.0; // 最大再生速度
+    const cursor = document.getElementById("cursor");
+    const joystick = document.getElementById("joystick");
+    const playButton = document.getElementById("play-button");
+    const prevPageButton = document.getElementById("prev-page-button");
+    const nextPageButton = document.getElementById("next-page-button");
+    const audioElements = {};
+    const minSpeed = 0.8;
+    const maxSpeed = 3.0;
+    let activeAudio = null;
+    let currentTarget = null;
+
+    let cursorPosition = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+    let isJoystickActive = false;
+    let joystickOffset = { x: 0, y: 0 };
+    let isPlaying = false;
+
+    // スクロール量（1回のボタン操作で移動する距離）
+    const SCROLL_AMOUNT = 300;
 
     // 音声キャッシュの準備
     voElements.forEach((element) => {
@@ -15,100 +26,93 @@ document.addEventListener("DOMContentLoaded", () => {
         audioElements[element.id] = audio;
     });
 
+    // ポインタの描画更新
+    function updateCursor() {
+        cursor.style.left = `${cursorPosition.x - cursor.offsetWidth / 2}px`;
+        cursor.style.top = `${cursorPosition.y - cursor.offsetHeight / 2}px`;
+
+        const target = document.elementFromPoint(cursorPosition.x, cursorPosition.y);
+        if (target && target.classList.contains("vo") && target !== currentTarget) {
+            playAudio(target);
+        }
+    }
+
     // 再生処理
     function playAudio(target) {
         if (activeAudio) {
             activeAudio.pause();
-            activeAudio.currentTime = 0; // 現在の音声を停止
+            activeAudio.currentTime = 0;
         }
         if (currentTarget) {
-            currentTarget.classList.remove("playing"); // 前のターゲットのハイライトを解除
+            currentTarget.classList.remove("playing");
         }
         const audioId = target.id;
         const audio = audioElements[audioId];
         if (!audio) return;
 
         activeAudio = audio;
-        currentTarget = target; // 現在のターゲットを更新
-        target.classList.add("playing"); // 新しいターゲットにハイライト
-        audio.currentTime = 0; // 音声を最初から再生
-        audio.play();
+        currentTarget = target;
+        target.classList.add("playing");
+        audio.currentTime = 0;
+        if (isPlaying) audio.play();
     }
 
-    // 指の速さを計算して再生速度を調整
-    function adjustPlaybackRate(currentPosition, currentTime) {
-        if (!lastPosition || !lastTime) return; // 初回の計算をスキップ
-
-        const dx = currentPosition.x - lastPosition.x;
-        const dy = currentPosition.y - lastPosition.y;
-        const distance = Math.sqrt(dx * dx + dy * dy); // 移動距離
-        const deltaTime = currentTime - lastTime; // 経過時間
-
-        if (deltaTime > 0) {
-            const speed = distance / deltaTime * 1000; // ピクセル/秒の速度
-            const playbackRate = Math.min(maxSpeed, Math.max(minSpeed, speed / 300)); // 再生速度を制限範囲に調整
-            if (activeAudio) {
-                activeAudio.playbackRate = playbackRate; // 再生速度を設定
-            }
+    // ジョイスティックの動作
+    function moveCursor() {
+        if (isJoystickActive) {
+            cursorPosition.x = Math.min(
+                window.innerWidth,
+                Math.max(0, cursorPosition.x + joystickOffset.x / 10)
+            );
+            cursorPosition.y = Math.min(
+                window.innerHeight,
+                Math.max(0, cursorPosition.y + joystickOffset.y / 10)
+            );
+            updateCursor();
+            requestAnimationFrame(moveCursor);
         }
-
-        // 現在の位置と時間を記録
-        lastPosition = currentPosition;
-        lastTime = currentTime;
     }
 
-    // ポインタが要素に触れたとき
-    document.addEventListener("pointerdown", (e) => {
-        const target = document.elementFromPoint(e.clientX, e.clientY);
-
-        if (target && target.classList.contains("vo")) {
-            playAudio(target); // 初回再生
-        }
-
-        // タッチ開始位置と時間を記録
-        lastPosition = { x: e.clientX, y: e.clientY };
-        lastTime = performance.now();
+    joystick.addEventListener("mousedown", (e) => {
+        isJoystickActive = true;
+        const rect = joystick.getBoundingClientRect();
+        joystickOffset.x = e.clientX - (rect.left + rect.width / 2);
+        joystickOffset.y = e.clientY - (rect.top + rect.height / 2);
+        moveCursor();
     });
 
-    // ポインタが移動したとき
-    document.addEventListener("pointermove", (e) => {
-        adjustPlaybackRate({ x: e.clientX, y: e.clientY }, performance.now());
-
-        const target = document.elementFromPoint(e.clientX, e.clientY);
-
-        // 次の要素に移動した場合
-        if (target && target.classList.contains("vo") && target !== currentTarget) {
-            playAudio(target);
-        }
+    joystick.addEventListener("mouseup", () => {
+        isJoystickActive = false;
+        joystickOffset = { x: 0, y: 0 };
     });
 
-    // ポインタが離れたとき
-    document.addEventListener("pointerup", () => {
-        if (activeAudio) {
-            activeAudio.pause();
-            activeAudio.currentTime = 0; // 再生位置をリセット
-        }
-        if (currentTarget) {
-            currentTarget.classList.remove("playing"); // ハイライトを解除
-        }
-        activeAudio = null;
-        currentTarget = null;
-        lastPosition = null;
-        lastTime = null;
+    // 再生ボタンの操作
+    playButton.addEventListener("mousedown", () => {
+        isPlaying = true;
+        if (activeAudio) activeAudio.play();
     });
 
-    // ポインタがキャンセルされたとき
-    document.addEventListener("pointercancel", () => {
-        if (activeAudio) {
-            activeAudio.pause();
-            activeAudio.currentTime = 0; // 再生位置をリセット
-        }
-        if (currentTarget) {
-            currentTarget.classList.remove("playing"); // ハイライトを解除
-        }
-        activeAudio = null;
-        currentTarget = null;
-        lastPosition = null;
-        lastTime = null;
+    playButton.addEventListener("mouseup", () => {
+        isPlaying = false;
+        if (activeAudio) activeAudio.pause();
     });
+
+    // スクロールボタンの操作
+    prevPageButton.addEventListener("click", () => {
+        const book = document.querySelector(".book");
+        book.scrollBy({
+            top: -SCROLL_AMOUNT,
+            behavior: "smooth",
+        });
+    });
+
+    nextPageButton.addEventListener("click", () => {
+        const book = document.querySelector(".book");
+        book.scrollBy({
+            top: SCROLL_AMOUNT,
+            behavior: "smooth",
+        });
+    });
+
+    updateCursor();
 });
