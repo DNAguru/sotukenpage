@@ -1,107 +1,124 @@
 document.addEventListener("DOMContentLoaded", () => {
-    const voElements = document.querySelectorAll(".vo"); // 対象要素
+    const voElements = Array.from(document.querySelectorAll(".vo")); // vo要素を配列に変換
     const audioElements = {}; // 音声キャッシュ用
-    let activeAudio = null; // 現在再生中の音声
-    let currentTarget = null; // 現在のターゲット要素
-    let lastPosition = null; // 前回の座標
-    let lastTime = null; // 前回の時間
-
-    const minSpeed = 0.8; // 最低再生速度
-    const maxSpeed = 3.0; // 最大再生速度
+    let isSwiping = false; // スワイプ中かどうか
+    let currentAudioIndex = -1; // 現在再生中のvo要素のインデックス
+    let playbackSpeed = 1.0; // 再生速度
+    let swipeStartIndex = -1; // スワイプを開始したvo要素のインデックス
+    let lastTouchPosition = null; // 前回のタッチ位置
+    let lastTouchTime = null; // 前回のタッチ時間
 
     // 音声キャッシュの準備
-    voElements.forEach((element) => {
+    voElements.forEach((element, index) => {
         const audioId = element.id.replace("vo", "").padStart(3, "0");
         const audio = new Audio(`voice/${audioId}.wav`);
-        audioElements[element.id] = audio;
+        audio.preload = "auto"; // 音声を事前に読み込む
+        audioElements[index] = audio;
     });
 
-    // タッチ位置に対応する要素を再生
-    function playAudio(target) {
-        if (activeAudio) {
-            activeAudio.pause();
-            activeAudio.currentTime = 0; // 現在の音声を停止
-        }
-        if (currentTarget) {
-            currentTarget.classList.remove("playing"); // ハイライトを解除
-        }
-        const audioId = target.id;
-        const audio = audioElements[audioId];
-        if (!audio) return;
+    // 音声を再生し、ハイライトを更新
+    function playAudio(index) {
+        if (currentAudioIndex === index || index >= voElements.length) return;
 
-        activeAudio = audio;
-        currentTarget = target; // 現在のターゲットを更新
-        target.classList.add("playing"); // ハイライトを追加
-        audio.currentTime = 0; // 音声を最初から再生
+        // 前回の再生中の音声を停止
+        if (currentAudioIndex !== -1) {
+            audioElements[currentAudioIndex].pause();
+            audioElements[currentAudioIndex].currentTime = 0;
+            voElements[currentAudioIndex].classList.remove("playing");
+        }
+
+        // 現在の音声を再生
+        currentAudioIndex = index;
+        const audio = audioElements[currentAudioIndex];
+        const voElement = voElements[currentAudioIndex];
+
+        audio.playbackRate = playbackSpeed; // 再生速度を設定
         audio.play();
+        voElement.classList.add("playing"); // ハイライトを追加
+
+        // 再生終了時に次の音声を再生
+        audio.onended = () => playAudio(currentAudioIndex + 1);
     }
 
-    // 指の速さを計算して再生速度を調整
-    function adjustPlaybackRate(currentPosition, currentTime) {
-        if (!lastPosition || !lastTime) return;
-
-        const dx = currentPosition.x - lastPosition.x;
-        const dy = currentPosition.y - lastPosition.y;
-        const distance = Math.sqrt(dx * dx + dy * dy); // 移動距離
-        const deltaTime = currentTime - lastTime; // 経過時間
-
-        if (deltaTime > 0) {
-            const speed = distance / deltaTime * 1000; // ピクセル/秒の速度
-            const playbackRate = Math.min(maxSpeed, Math.max(minSpeed, speed / 300)); // 再生速度を制限範囲に調整
-            if (activeAudio) {
-                activeAudio.playbackRate = playbackRate; // 再生速度を設定
-            }
+    // 再生速度を調整
+    function adjustPlaybackSpeed(touchX, touchY, touchTime) {
+        if (!lastTouchPosition || !lastTouchTime) {
+            lastTouchPosition = { x: touchX, y: touchY };
+            lastTouchTime = touchTime;
+            return;
         }
 
-        lastPosition = { ...currentPosition }; // 現在の座標を更新
-        lastTime = currentTime; // 現在の時間を更新
+        // 移動距離と時間を計算
+        const dx = touchX - lastTouchPosition.x;
+        const dy = touchY - lastTouchPosition.y;
+        const distance = Math.sqrt(dx * dx + dy * dy); // ピクセル単位の移動距離
+        const timeDelta = touchTime - lastTouchTime; // ミリ秒単位の時間差
+
+        // スワイプ速度に基づいて再生速度を設定 (0.8倍〜3倍の範囲で制限)
+        const speed = Math.min(3.0, Math.max(0.8, (distance / timeDelta) * 50));
+        playbackSpeed = speed;
+
+        // 現在再生中の音声に反映
+        if (currentAudioIndex !== -1) {
+            audioElements[currentAudioIndex].playbackRate = playbackSpeed;
+        }
+
+        // 現在のタッチ位置と時間を更新
+        lastTouchPosition = { x: touchX, y: touchY };
+        lastTouchTime = touchTime;
     }
 
-    // `touchstart` イベント
+    // タッチ開始
     function startInteraction(event) {
-        event.preventDefault();
-        const startEvent = event.touches[0];
-        const target = document.elementFromPoint(startEvent.clientX, startEvent.clientY);
+        const touch = event.touches[0];
+        const target = document.elementFromPoint(touch.clientX, touch.clientY);
+        const startIndex = voElements.findIndex((el) => el === target);
 
-        if (target && target.classList.contains("vo")) {
-            playAudio(target); // 初回再生
+        if (startIndex !== -1) {
+            swipeStartIndex = startIndex; // スワイプ開始インデックス
+            isSwiping = true;
         }
 
-        lastPosition = { x: startEvent.clientX, y: startEvent.clientY };
-        lastTime = performance.now();
+        lastTouchPosition = { x: touch.clientX, y: touch.clientY };
+        lastTouchTime = performance.now();
+
+        // 初回の再生速度を計算
+        playbackSpeed = 1.0; // 初期値にリセット
     }
 
-    // `touchmove` イベント
+    // タッチ移動
     function moveInteraction(event) {
-        event.preventDefault();
-        const moveEvent = event.touches[0];
+        if (!isSwiping || swipeStartIndex === -1) return;
 
-        adjustPlaybackRate({ x: moveEvent.clientX, y: moveEvent.clientY }, performance.now());
+        const touch = event.touches[0];
+        const currentTime = performance.now();
 
-        const target = document.elementFromPoint(moveEvent.clientX, moveEvent.clientY);
+        adjustPlaybackSpeed(touch.clientX, touch.clientY, currentTime);
 
-        // 別の要素に移動した場合
-        if (target && target.classList.contains("vo") && target !== currentTarget) {
-            playAudio(target);
+        // 音声再生は順番に続ける（スワイプ中に別のvo要素に移動しても無視）
+        if (currentAudioIndex === -1 || !audioElements[currentAudioIndex].playing) {
+            playAudio(swipeStartIndex);
         }
     }
 
-    // `touchend` イベント
+    // タッチ終了
     function endInteraction() {
-        if (activeAudio) {
-            activeAudio.pause();
-            activeAudio.currentTime = 0; // 再生位置をリセット
+        if (currentAudioIndex !== -1) {
+            audioElements[currentAudioIndex].pause();
         }
-        if (currentTarget) {
-            currentTarget.classList.remove("playing"); // ハイライトを解除
-        }
-        activeAudio = null;
-        currentTarget = null;
-        lastPosition = null;
-        lastTime = null;
+
+        // ハイライトを解除
+        voElements.forEach((el) => el.classList.remove("playing"));
+
+        // 状態をリセット
+        isSwiping = false;
+        currentAudioIndex = -1;
+        swipeStartIndex = -1;
+        lastTouchPosition = null;
+        lastTouchTime = null;
     }
 
-    // イベントリスナーを追加（touchのみ対応）
+    // タッチイベントリスナーを登録
     document.addEventListener("touchstart", startInteraction, { passive: false });
     document.addEventListener("touchmove", moveInteraction, { passive: false });
     document.addEventListener("touchend", endInteraction);

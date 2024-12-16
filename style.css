@@ -1,8 +1,14 @@
-/* テキストが選択されたときのスタイル */
-.vo::selection {
-    background-color: #ffeb3b; /* 選択時の背景色 */
-    color: #000; /* 選択時の文字色 */
+/* 再生中の vo 要素をハイライト表示 */
+.vo.playing {
+    background-color: #fdea93; /* 明るい黄色の背景 */
+    transition: background-color 0.3s ease, border 0.3s ease; /* なめらかに変化 */
 }
+
+/* vo 要素の通常状態 */
+.vo {
+    transition: background-color 0.3s ease, border 0.3s ease; /* なめらかに変化 */
+}
+
 
 body {
     overflow: hidden; /* スクロールバーを非表示 */
@@ -58,12 +64,7 @@ body, .book, .vo {
     user-select: none; /* その他のブラウザ */
 }
 
-/* ホバー時のエフェクト強化 */
-.vo:hover {
-    background-color: #fdea93;
-    cursor: pointer; /* ポインタを変更 */
-    transition: transform 0.2s ease, background-color 0.2s ease;
-}
+
 
 /* スクロールバーのデザイン (Chrome/Edge/Safari用) */
 .book::-webkit-scrollbar {
