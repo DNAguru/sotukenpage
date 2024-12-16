@@ -5,8 +5,14 @@ document.addEventListener("DOMContentLoaded", () => {
     let currentIndex = -1;
     let playbackRate = 1; // 初期再生速度
 
+    // コンテナを作成
+    const controlContainer = document.createElement("div");
+    controlContainer.id = "control-container";
+    document.body.appendChild(controlContainer);
+
     // 再生速度変更用のセレクトボックスを作成
     const speedSelector = document.createElement("select");
+    speedSelector.id = "speed-selector";
     const speeds = [0.5, 0.8, 1, 1.2, 1.5, 2, 3, 5];
     speeds.forEach(speed => {
         const option = document.createElement("option");
@@ -15,10 +21,8 @@ document.addEventListener("DOMContentLoaded", () => {
         if (speed === playbackRate) option.selected = true;
         speedSelector.appendChild(option);
     });
-    document.body.appendChild(speedSelector);
-    speedSelector.style.position = "fixed";
-    speedSelector.style.top = "10px";
-    speedSelector.style.right = "10px";
+
+    // 再生速度変更時の動作
     speedSelector.addEventListener("change", (e) => {
         playbackRate = parseFloat(e.target.value);
         if (currentAudio) {
@@ -26,18 +30,20 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
+   controlContainer.appendChild(speedSelector);
+
     // 再生停止ボタンを作成
     const stopButton = document.createElement("button");
+    stopButton.id = "stop-button";
     stopButton.textContent = "再生停止";
-    stopButton.style.position = "fixed";
-    stopButton.style.top = "50px";
-    stopButton.style.right = "10px";
-    document.body.appendChild(stopButton);
 
     stopButton.addEventListener("click", () => {
         stopCurrentPlayback();
     });
 
+    controlContainer.appendChild(stopButton);
+
+    // 再生停止機能
     function stopCurrentPlayback() {
         if (currentAudio) {
             currentAudio.pause();
@@ -64,6 +70,9 @@ document.addEventListener("DOMContentLoaded", () => {
         voElements.forEach(el => el.classList.remove("playing"));
         element.classList.add("playing");
 
+        // 再生中の要素が画面外の場合にスクロール
+        scrollToElement(element);
+
         // 次の音声を再生
         currentAudio.addEventListener("ended", () => {
             playAudioFromIndex(currentIndex + 1);
@@ -79,4 +88,18 @@ document.addEventListener("DOMContentLoaded", () => {
             playAudioFromIndex(index);
         });
     });
+
+    // 再生中の要素が画面外の場合にスクロール
+    function scrollToElement(element) {
+        const elementRect = element.getBoundingClientRect();
+        const SCROLL_PADDING = 10; // スクロール時の余白
+
+        if (elementRect.left < SCROLL_PADDING ) {
+            const book = document.querySelector(".book");
+            book.scrollBy({
+                left: -100,
+                behavior: "smooth", // スムーズなスクロール
+            });
+        }
+    }
 });

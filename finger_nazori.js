@@ -8,7 +8,13 @@ document.addEventListener("DOMContentLoaded", () => {
     let lastTouchPosition = null; // 前回のタッチ位置
     let lastTouchTime = null; // 前回のタッチ時間
 
-    // 音声キャッシュの準備（idの番号順に音声を準備）
+    const SPEED_SCALING_FACTOR = 3; // 再生速度スケーリング係数
+    const MIN_PLAYBACK_SPEED = 0.8; // 最低再生速度
+    const MAX_PLAYBACK_SPEED = 3.0; // 最大再生速度
+
+    const SCROLL_PADDING = 10; // スクロールの余白（ピクセル）
+
+    // 音声キャッシュの準備
     voElements.forEach((element, index) => {
         const audioId = element.id.replace("vo", "").padStart(3, "0");
         const audio = new Audio(`voice/${audioId}.wav`);
@@ -37,8 +43,25 @@ document.addEventListener("DOMContentLoaded", () => {
         audio.play();
         voElement.classList.add("playing"); // ハイライトを追加
 
+        // 再生中の要素が画面外の場合、スクロールする
+        scrollToElement(voElement);
+
         // 再生終了時に次の音声を再生
         audio.onended = () => playAudio(currentAudioIndex + 1);
+    }
+
+    // 再生中の要素が画面外ならスクロール
+    function scrollToElement(element) {
+        const elementRect = element.getBoundingClientRect();
+
+        // 上部または下部に隠れている場合のみスクロールを実行
+        if (elementRect.left < SCROLL_PADDING ) {
+            const book = document.querySelector(".book");
+            book.scrollBy({
+                left: -100,
+                behavior: "smooth", // スムーズなスクロール
+            });
+        }
     }
 
     // 再生速度を調整
@@ -56,8 +79,11 @@ document.addEventListener("DOMContentLoaded", () => {
         const timeDelta = touchTime - lastTouchTime; // ミリ秒単位の時間差
 
         // スワイプ速度に基づいて再生速度を設定 (0.8倍〜3倍の範囲で制限)
-        const speed = Math.min(3.0, Math.max(0.8, (distance / timeDelta) * 50));
-        playbackSpeed = speed;
+        if (timeDelta > 0) {
+            const rawSpeed = (distance / timeDelta) * SPEED_SCALING_FACTOR;
+            const smoothedSpeed = (rawSpeed + playbackSpeed) / 2; // スムージング
+            playbackSpeed = Math.min(MAX_PLAYBACK_SPEED, Math.max(MIN_PLAYBACK_SPEED, smoothedSpeed));
+        }
 
         // 現在再生中の音声に反映
         if (currentAudioIndex !== -1) {

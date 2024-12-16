@@ -97,7 +97,7 @@ body, .book, .vo {
     bottom: 20px;
     left: 20px;
     display: flex;
-    flex-direction: column;
+    /* flex-direction: column; */
     gap: 10px;
     z-index: 1000;
 }
@@ -107,16 +107,65 @@ body, .book, .vo {
     padding: 10px 20px;
     font-size: 13px;
     cursor: pointer;
-    background: #007bff;
-    color: white;
+    background: #eaeaea;
+    color: rgb(84, 84, 84);
     border: none;
     border-radius: 5px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.345);
 }
 
 #play-button:hover, #prev-page-button:hover, #next-page-button:hover {
-    background: #0056b3;
+    background: #9f9f9f;
 }
+
+/* コンテナ全体のスタイル */
+#control-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #fff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 1000;
+}
+
+/* 再生速度セレクトボックスのスタイル */
+#speed-selector {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    background: #f9f9f9;
+    color: #333;
+    transition: border-color 0.2s ease;
+}
+
+#speed-selector:hover {
+    border-color: #bbb;
+}
+
+/* 再生停止ボタンのスタイル */
+#stop-button {
+    padding: 10px;
+    border: none;
+    border-radius: 4px;
+    background: #ff4d4d;
+    color: #fff;
+    font-size: 14px;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transition: background 0.3s;
+}
+
+#stop-button:hover {
+    background: #e63939;
+}
+
+
 
 /* ジョイスティックコンテナ */
 #joystick-container {
@@ -150,14 +199,3 @@ body, .book, .vo {
     cursor: pointer;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
 }
-
-
-
-
-
-/* 再生中の要素にハイライトを追加 */
-/* .vo.playing {
-    background-color: #fdea93;
-    transition: background-color 0.3s ease;
-} */
-
