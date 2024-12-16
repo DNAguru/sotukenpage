@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let lastTouchPosition = null; // 前回のタッチ位置
     let lastTouchTime = null; // 前回のタッチ時間
 
-    // 音声キャッシュの準備
+    // 音声キャッシュの準備（idの番号順に音声を準備）
     voElements.forEach((element, index) => {
         const audioId = element.id.replace("vo", "").padStart(3, "0");
         const audio = new Audio(`voice/${audioId}.wav`);
@@ -18,7 +18,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 音声を再生し、ハイライトを更新
     function playAudio(index) {
-        if (currentAudioIndex === index || index >= voElements.length) return;
+        if (index < 0 || index >= voElements.length) return; // 範囲外は無視
+        if (currentAudioIndex === index) return; // 既に再生中なら無視
 
         // 前回の再生中の音声を停止
         if (currentAudioIndex !== -1) {
@@ -76,14 +77,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (startIndex !== -1) {
             swipeStartIndex = startIndex; // スワイプ開始インデックス
+            playAudio(swipeStartIndex); // 最初の音声を再生
             isSwiping = true;
         }
 
         lastTouchPosition = { x: touch.clientX, y: touch.clientY };
         lastTouchTime = performance.now();
-
-        // 初回の再生速度を計算
-        playbackSpeed = 1.0; // 初期値にリセット
     }
 
     // タッチ移動
@@ -96,7 +95,7 @@ document.addEventListener("DOMContentLoaded", () => {
         adjustPlaybackSpeed(touch.clientX, touch.clientY, currentTime);
 
         // 音声再生は順番に続ける（スワイプ中に別のvo要素に移動しても無視）
-        if (currentAudioIndex === -1 || !audioElements[currentAudioIndex].playing) {
+        if (currentAudioIndex === -1) {
             playAudio(swipeStartIndex);
         }
     }
