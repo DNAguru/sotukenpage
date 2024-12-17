@@ -8,9 +8,9 @@ document.addEventListener("DOMContentLoaded", () => {
     let lastTouchPosition = null; // 前回のタッチ位置
     let lastTouchTime = null; // 前回のタッチ時間
 
-    const SPEED_SCALING_FACTOR = 3; // 再生速度スケーリング係数
+    const SPEED_SCALING_FACTOR = 10; // 再生速度スケーリング係数
     const MIN_PLAYBACK_SPEED = 0.8; // 最低再生速度
-    const MAX_PLAYBACK_SPEED = 3.0; // 最大再生速度
+    const MAX_PLAYBACK_SPEED = 5.0; // 最大再生速度
 
     const SCROLL_PADDING = 10; // スクロールの余白（ピクセル）
 
@@ -72,18 +72,18 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        // 移動距離と時間を計算
-        const dx = touchX - lastTouchPosition.x;
-        const dy = touchY - lastTouchPosition.y;
-        const distance = Math.sqrt(dx * dx + dy * dy); // ピクセル単位の移動距離
+    // 垂直方向の移動距離を計算（下方向のみ考慮）
+    const dy = touchY - lastTouchPosition.y; // Y座標の変化量
+         if (dy > 0) {
         const timeDelta = touchTime - lastTouchTime; // ミリ秒単位の時間差
 
-        // スワイプ速度に基づいて再生速度を設定 (0.8倍〜3倍の範囲で制限)
+        // スワイプ速度に基づいて再生速度を設定
         if (timeDelta > 0) {
-            const rawSpeed = (distance / timeDelta) * SPEED_SCALING_FACTOR;
+            const rawSpeed = (dy / timeDelta) * SPEED_SCALING_FACTOR;
             const smoothedSpeed = (rawSpeed + playbackSpeed) / 2; // スムージング
             playbackSpeed = Math.min(MAX_PLAYBACK_SPEED, Math.max(MIN_PLAYBACK_SPEED, smoothedSpeed));
         }
+    }
 
         // 現在再生中の音声に反映
         if (currentAudioIndex !== -1) {
@@ -130,6 +130,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function endInteraction() {
         if (currentAudioIndex !== -1) {
             audioElements[currentAudioIndex].pause();
+            audioElements[currentAudioIndex].currentTime = 0;
         }
 
         // ハイライトを解除
